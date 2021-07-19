@@ -322,5 +322,54 @@ class CourseController extends Controller
 
        return response()->json(['status' => $status,'message'=>$message]);
      }
+    
+       public function store(Request $request)
+    { 
+
+        $department_id = "";
+        $status = "";
+        $warning = "";
+        $message = "";
+        //validations
+        $request->validate([
+            'school_id' => 'required',
+            'department_name' => 'required',
+            'programs_name' => 'required',
+            'degrees_type' => 'required'
+        ]);
+        //creating department id 
+    try{
+        $department_id = Str::uuid();
+         
+        Department::create([
+            'id' => $department_id,
+            'school_id' => $request['school_id'],
+            'department_name' => $request['department_name']
+        ]);
+
+        $sizeofprogramms = sizeof($request->programs_name);
+
+        for($i = 0;$i < $sizeofprogramms; $i++)
+        {   
+            Program::create([
+                'id' => Str::uuid(),
+                'department_id' => $department_id,
+                'school_id' => $request['school_id'],
+                'program_name' => $request->programs_name[$i],
+                'degree_type' => strtoupper(trim($request->degrees_type[$i]))
+            ]);
+        }
+         $status = 'success';
+         $message = "Department and programs Added Successfully";
+    }
+        catch (Exception $e) {
+            Log::warning('Error Adding programm or department',$e->getMessage());
+            $status = 'error';
+            $message = "Unable to Add either program or department ";
+       }
+      return response()->json(['status' => $status,'message'=>$message]);
+    }
+
+ 
 
 }
